@@ -736,3 +736,25 @@ function wc_update_user_last_active( $user_id ) {
 	}
 	update_user_meta( $user_id, 'wc_last_active', (string) strtotime( date( 'Y-m-d', current_time( 'timestamp', true ) ) ) );
 }
+
+/**
+ * Only provide Shop Managers access to the WooCommerce importers.
+ *
+ * @since 3.4.6
+ */
+function wc_shop_managers_only_wc_importers() {
+	global $wp_importers;
+
+	if ( $wp_importers && current_user_can( 'shop_manager' ) ) {
+		$allowed_importers = array();
+
+		foreach ( $wp_importers as $importer_slug => $importer ) {
+			if ( false !== strpos( $importer_slug, 'woocommerce' ) ) {
+				$allowed_importers[ $importer_slug ] = $importer;
+			}
+		}
+
+		$wp_importers = $allowed_importers;
+	}
+}
+add_action( 'admin_init', 'wc_shop_managers_only_wc_importers', 99 );
